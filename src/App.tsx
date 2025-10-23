@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { Toaster } from 'react-hot-toast';
 import { auth, db } from './firebase';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './components/Dashboard';
@@ -64,11 +65,34 @@ function App() {
 
   return (
     <>
-      {user ? (
-        <Dashboard user={user} showWelcome={showWelcome} setShowWelcome={setShowWelcome} />
-      ) : (
-        <AuthPage />
-      )}
+      <Toaster
+      position="top-right"
+      toastOptions={{
+        duration: 3000,
+        style: {
+          background: '#1e293b',
+          color: '#fff',
+          border: '1px solid rgba(139, 92, 246, 0.3)',
+        },
+        success: {
+          iconTheme: {
+            primary: '#a78bfa',
+            secondary: '#fff',
+          },
+        },
+        error: {
+          iconTheme: {
+            primary: '#f87171',
+            secondary: '#fff',
+          },
+        },
+      }}
+    />
+    {user ? (
+      <Dashboard user={user} showWelcome={showWelcome} setShowWelcome={setShowWelcome} />
+    ) : (
+      <AuthPage />
+    )}
     </>
   );
 }

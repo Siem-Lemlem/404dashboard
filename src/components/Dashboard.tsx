@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LogOut } from 'lucide-react';
+import toast from 'react-hot-toast';
 import {
   collection,
   addDoc,
@@ -100,263 +101,268 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
   });
 
   // FIRESTORE REALTIME LISTENER
-    useEffect(() => {
+  useEffect(() => {
+    const resourcesRef = collection(db, 'users', user.uid, 'resources');
+
+    const unsubscribe = onSnapshot(
+      resourcesRef,
+      (snapshot) => {
+        const resourcesData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as Resource[];
+
+        setResources(resourcesData);
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Error fetching resources:', error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, [user.uid]);
+
+  // HANDLE TAKE TOUR
+  const handleTakeTour = async () => {
+    try {
       const resourcesRef = collection(db, 'users', user.uid, 'resources');
-  
-      const unsubscribe = onSnapshot(
-        resourcesRef,
-        (snapshot) => {
-          const resourcesData = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-          })) as Resource[];
-  
-          setResources(resourcesData);
-          setLoading(false);
-        },
-        (error) => {
-          console.error('Error fetching resources:', error);
-          setLoading(false);
-        }
-      );
-  
-      return () => unsubscribe();
-    }, [user.uid]);
-  
-    // HANDLE TAKE TOUR
-    const handleTakeTour = async () => {
-      try {
-        const resourcesRef = collection(db, 'users', user.uid, 'resources');
-  
-        await Promise.all(
-          sampleResources.map(resource =>
-            addDoc(resourcesRef, {
-              ...resource,
-              createdAt: serverTimestamp()
-            })
-          )
-        );
-  
-        const userProfileRef = doc(db, 'users', user.uid, 'profile', 'info');
-        await updateDoc(userProfileRef, {
-          hasCompletedOnboarding: true
-        });
-  
-        setShowWelcome(false);
-      } catch (error) {
-        console.error('Error adding sample resources:', error);
-        alert('Failed to add sample resources. Please try again.');
-      }
-    };
-  
-    // HANDLE SKIP
-    const handleSkip = async () => {
-      try {
-        const userProfileRef = doc(db, 'users', user.uid, 'profile', 'info');
-        await updateDoc(userProfileRef, {
-          hasCompletedOnboarding: true
-        });
-  
-        setShowWelcome(false);
-      } catch (error) {
-        console.error('Error updating profile:', error);
-        alert('Failed to update profile. Please try again.');
-      }
-    };
-  
-    // HANDLE EDIT CLICK
-    const handleEditClick = (resource: Resource) => {
-      setFormData({
-        name: resource.name,
-        url: resource.url,
-        description: resource.description,
-        category: resource.category,
-        tags: resource.tags.join(', ')
-      });
-      setEditingResource(resource);
-      setShowAddModal(true);
-    };
-  
-    // HANDLE SUBMIT (ADD OR EDIT)
-    const handleSubmit = async () => {
-      if (!formData.name || !formData.url || !formData.description) return;
-  
-      try {
-        const processedTags = formData.tags
-          .split(',')
-          .map(tag => tag.trim())
-          .filter(Boolean);
-  
-        if (editingResource) {
-          const resourceDoc = doc(db, 'users', user.uid, 'resources', editingResource.id);
-          await updateDoc(resourceDoc, {
-            name: formData.name,
-            url: formData.url,
-            description: formData.description,
-            category: formData.category,
-            tags: processedTags,
-            updatedAt: serverTimestamp()
-          });
-        } else {
-          const resourcesRef = collection(db, 'users', user.uid, 'resources');
-          await addDoc(resourcesRef, {
-            name: formData.name,
-            url: formData.url,
-            description: formData.description,
-            category: formData.category,
-            tags: processedTags,
+
+      await Promise.all(
+        sampleResources.map(resource =>
+          addDoc(resourcesRef, {
+            ...resource,
             createdAt: serverTimestamp()
-          });
-        }
-  
-        setFormData({ name: '', url: '', description: '', category: 'Documentation', tags: '' });
-        setEditingResource(null);
-        setShowAddModal(false);
-      } catch (error) {
-        console.error('Error saving resource:', error);
-        alert('Failed to save resource. Please try again.');
-      }
-    };
-  
-    // HANDLE DELETE
-    const handleDelete = async (id: string) => {
-      try {
-        const resourceDoc = doc(db, 'users', user.uid, 'resources', id);
-        await deleteDoc(resourceDoc);
-      } catch (error) {
-        console.error('Error deleting resource:', error);
-        alert('Failed to delete resource. Please try again.');
-      }
-    };
-  
-    // HANDLE LOGOUT
-    const handleLogout = async () => {
-      try {
-        await signOut(auth);
-      } catch (error) {
-        console.error('Error logging out', error);
-      }
-    };
-  
-    // HANDLE MODAL CLOSE
-    const handleCloseModal = () => {
-      setShowAddModal(false);
-      setEditingResource(null);
-      setFormData({ name: '', url: '', description: '', category: 'Documentation', tags: '' });
-    };
-  
-    // SORTING LOGIC
-    const sortResources = (resources: Resource[]): Resource[] => {
-      const sorted = [...resources];
-  
-      switch (sortBy) {
-        case 'nameAsc':
-          return sorted.sort((a, b) => a.name.localeCompare(b.name));
-        case 'nameDesc':
-          return sorted.sort((a, b) => b.name.localeCompare(a.name));
-        case 'dateAsc':
-          return sorted.sort((a, b) => 
-            (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0)
-          );
-        case 'dateDesc':
-          return sorted.sort((a, b) => 
-            (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
-          );
-        case 'category':
-          return sorted.sort((a, b) => a.category.localeCompare(b.category));
-        default:
-          return sorted;
-      }
-    };
-  
-    // FILTERING LOGIC
-    const filteredResources = resources.filter(resource => {
-      const matchesSearch =
-        resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesCategory = selectedCategory === 'All' || resource.category === selectedCategory;
-      return matchesSearch && matchesCategory;
-    });
-  
-    // APPLY SORTING TO FILTERED RESOURCES
-    const sortedAndFilteredResources = sortResources(filteredResources);
-  
-    // LOADING STATE
-    if (loading) {
-      return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-          <div className="text-white text-xl">Loading your resources...</div>
-        </div>
+          })
+        )
       );
+
+      const userProfileRef = doc(db, 'users', user.uid, 'profile', 'info');
+      await updateDoc(userProfileRef, {
+        hasCompletedOnboarding: true
+      });
+
+      setShowWelcome(false);
+      toast.success('Welcome! 8 sample resources added to get you started');
+    } catch (error) {
+      console.error('Error adding sample resources:', error);
+      toast.error('Failed to add sample resources. Please try again.');
     }
-  
+  };
+
+  // HANDLE SKIP
+  const handleSkip = async () => {
+    try {
+      const userProfileRef = doc(db, 'users', user.uid, 'profile', 'info');
+      await updateDoc(userProfileRef, {
+        hasCompletedOnboarding: true
+      });
+
+      setShowWelcome(false);
+      toast.success('Welcome to 404Dashboard!');
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      toast.error('Failed to update profile. Please try again.');
+    }
+  };
+
+  // HANDLE EDIT CLICK
+  const handleEditClick = (resource: Resource) => {
+    setFormData({
+      name: resource.name,
+      url: resource.url,
+      description: resource.description,
+      category: resource.category,
+      tags: resource.tags.join(', ')
+    });
+    setEditingResource(resource);
+    setShowAddModal(true);
+  };
+
+  // HANDLE SUBMIT (ADD OR EDIT)
+  const handleSubmit = async () => {
+    if (!formData.name || !formData.url || !formData.description) return;
+
+    try {
+      const processedTags = formData.tags
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(Boolean);
+
+      if (editingResource) {
+        const resourceDoc = doc(db, 'users', user.uid, 'resources', editingResource.id);
+        await updateDoc(resourceDoc, {
+          name: formData.name,
+          url: formData.url,
+          description: formData.description,
+          category: formData.category,
+          tags: processedTags,
+          updatedAt: serverTimestamp()
+        });
+        toast.success('Resource updated successfully!');
+      } else {
+        const resourcesRef = collection(db, 'users', user.uid, 'resources');
+        await addDoc(resourcesRef, {
+          name: formData.name,
+          url: formData.url,
+          description: formData.description,
+          category: formData.category,
+          tags: processedTags,
+          createdAt: serverTimestamp()
+        });
+        toast.success('Resource added successfully!');
+      }
+
+      setFormData({ name: '', url: '', description: '', category: 'Documentation', tags: '' });
+      setEditingResource(null);
+      setShowAddModal(false);
+    } catch (error) {
+      console.error('Error saving resource:', error);
+      toast.error('Failed to save resource. Please try again.');
+    }
+  };
+
+  // HANDLE DELETE
+  const handleDelete = async (id: string) => {
+    try {
+      const resourceDoc = doc(db, 'users', user.uid, 'resources', id);
+      await deleteDoc(resourceDoc);
+      toast.success('Resource deleted');
+    } catch (error) {
+      console.error('Error deleting resource:', error);
+      toast.error('Failed to delete resource. Please try again.');
+    }
+  };
+
+  // HANDLE LOGOUT
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error('Error logging out', error);
+    }
+  };
+
+  // HANDLE MODAL CLOSE
+  const handleCloseModal = () => {
+    setShowAddModal(false);
+    setEditingResource(null);
+    setFormData({ name: '', url: '', description: '', category: 'Documentation', tags: '' });
+  };
+
+  // SORTING LOGIC
+  const sortResources = (resources: Resource[]): Resource[] => {
+    const sorted = [...resources];
+
+    switch (sortBy) {
+      case 'nameAsc':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      case 'nameDesc':
+        return sorted.sort((a, b) => b.name.localeCompare(a.name));
+      case 'dateAsc':
+        return sorted.sort((a, b) => 
+          (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0)
+        );
+      case 'dateDesc':
+        return sorted.sort((a, b) => 
+          (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+        );
+      case 'category':
+        return sorted.sort((a, b) => a.category.localeCompare(b.category));
+      default:
+        return sorted;
+    }
+  };
+
+  // FILTERING LOGIC
+  const filteredResources = resources.filter(resource => {
+    const matchesSearch =
+      resource.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesCategory = selectedCategory === 'All' || resource.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
+
+  // APPLY SORTING TO FILTERED RESOURCES
+  const sortedAndFilteredResources = sortResources(filteredResources);
+
+  // LOADING STATE
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-        <div className="max-w-7xl mx-auto p-6">
-          {/* Header */}
-          <div className="mb-8 flex justify-between items-center">
-            <div>
-              <h1 className="text-4xl font-bold text-white mb-2">404Dashboard</h1>
-              <p className="text-gray-300">Welcome back, {user.email}</p>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition-colors"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </button>
-          </div>
-  
-          {/* Search Bar with Sorting */}
-          <SearchBar
-            searchTerm={searchTerm}
-            onSearchChange={setSearchTerm}
-            selectedCategory={selectedCategory}
-            onCategoryChange={setSelectedCategory}
-            sortBy={sortBy}
-            onSortChange={setSortBy}
-            onAddClick={() => setShowAddModal(true)}
-          />
-  
-          {/* Resources Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {sortedAndFilteredResources.map(resource => (
-              <ResourceCard
-                key={resource.id}
-                resource={resource}
-                onEdit={handleEditClick}
-                onDelete={handleDelete}
-              />
-            ))}
-          </div>
-  
-          {/* Empty State */}
-          {sortedAndFilteredResources.length === 0 && (
-            <EmptyState hasResources={resources.length > 0} />
-          )}
-  
-          {/* Welcome Modal */}
-          {showWelcome && (
-            <WelcomeModal
-              user={user}
-              onTakeTour={handleTakeTour}
-              onSkip={handleSkip}
-            />
-          )}
-  
-          {/* Add/Edit Resource Modal */}
-          {showAddModal && (
-            <ResourceModal
-              formData={formData}
-              isEditing={!!editingResource}
-              onSubmit={handleSubmit}
-              onClose={handleCloseModal}
-              onFormChange={setFormData}
-            />
-          )}
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+        <div className="text-white text-xl">Loading your resources...</div>
       </div>
     );
   }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+      <div className="max-w-7xl mx-auto p-6">
+        {/* Header */}
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">404Dashboard</h1>
+            <p className="text-gray-300">Welcome back, {user.email}</p>
+          </div>
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition-colors"
+          >
+            <LogOut className="w-4 h-4" />
+            Logout
+          </button>
+        </div>
+
+        {/* Search Bar with Sorting */}
+        <SearchBar
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          sortBy={sortBy}
+          onSortChange={setSortBy}
+          onAddClick={() => setShowAddModal(true)}
+        />
+
+        {/* Resources Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sortedAndFilteredResources.map(resource => (
+            <ResourceCard
+              key={resource.id}
+              resource={resource}
+              onEdit={handleEditClick}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+
+        {/* Empty State */}
+        {sortedAndFilteredResources.length === 0 && (
+          <EmptyState hasResources={resources.length > 0} />
+        )}
+
+        {/* Welcome Modal */}
+        {showWelcome && (
+          <WelcomeModal
+            user={user}
+            onTakeTour={handleTakeTour}
+            onSkip={handleSkip}
+          />
+        )}
+
+        {/* Add/Edit Resource Modal */}
+        {showAddModal && (
+          <ResourceModal
+            formData={formData}
+            isEditing={!!editingResource}
+            onSubmit={handleSubmit}
+            onClose={handleCloseModal}
+            onFormChange={setFormData}
+          />
+        )}
+      </div>
+    </div>
+  );
+}

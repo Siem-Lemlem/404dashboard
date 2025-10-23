@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Mail, Lock, Chrome } from "lucide-react";
+import toast from "react-hot-toast";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
@@ -25,8 +26,10 @@ export default function AuthPage() {
     try {
       if (isLogin) {
         await signInWithEmailAndPassword(auth, email, password);
+        toast.success('Welcome back! 👋');
       } else {
         await createUserWithEmailAndPassword(auth, email, password);
+        toast.success('Account created successfully! 🎉');
       }
     } catch (err) {
       if (err instanceof FirebaseError) {
@@ -57,6 +60,7 @@ export default function AuthPage() {
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
+      toast.success('Signed in with Google! 🎉')
     } catch (err) {
       if (err instanceof FirebaseError) {
         if (err.code === "auth/popup-closed-by-user") {
