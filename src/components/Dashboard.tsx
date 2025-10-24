@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { LogOut } from 'lucide-react';
+import { LogOut, Download, Upload } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
   collection,
@@ -14,6 +14,7 @@ import { signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { User, Resource, ResourceFormData, SampleResource } from '../types';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
+import { exportAsJSON, exportAsCSV, parseImportFile, validateImportedData } from '../utils/exportImport';
 import WelcomeModal from './WelcomeModal';
 import SearchBar from './SearchBar';
 import ResourceCard from './ResourceCard';
@@ -103,6 +104,9 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
 
   // Ref for search input to focus it
   const searchInputRef = useRef<HTMLInputElement>(null);
+  
+  // Ref for file input (hidden)
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // KEYBOARD SHORTCUTS
   useKeyboardShortcuts([
@@ -111,7 +115,7 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
       ctrlKey: true,
       callback: () => {
         searchInputRef.current?.focus();
-        toast.success('Search focused, start typing...', { duration: 1500 });
+        toast.success('Search focused! Start typing...', { duration: 1500 });
       }
     },
     {
@@ -285,6 +289,71 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
     setFormData({ name: '', url: '', description: '', category: 'Documentation', tags: '' });
   };
 
+  // HANDLE EXPORT
+  const handleExport = (format: 'json' | 'csv') => {
+    if (resources.length === 0) {
+      toast.error('No resources to export');
+      return;
+    }
+
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `404dashboard-${timestamp}`;
+
+    if (format === 'json') {
+      exportAsJSON(resources, `${filename}.json`);
+      toast.success(`Exported ${resources.length} resources as JSON`);
+    } else {
+      exportAsCSV(resources, `${filename}.csv`);
+      toast.success(`Exported ${resources.length} resources as CSV`);
+    }
+  };
+
+  // HANDLE IMPORT
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Reset file input so same file can be imported again
+    e.target.value = '';
+
+    try {
+      const data = await parseImportFile(file);
+      const validation = validateImportedData(data);
+
+      if (!validation.valid) {
+        toast.error(validation.error || 'Invalid file format');
+        return;
+      }
+
+      // Add imported resources to Firestore
+      const resourcesRef = collection(db, 'users', user.uid, 'resources');
+      let successCount = 0;
+
+      await Promise.all(
+        data.map(async (resource: any) => {
+          try {
+            await addDoc(resourcesRef, {
+              name: resource.name,
+              url: resource.url,
+              description: resource.description,
+              category: resource.category,
+              tags: resource.tags,
+              createdAt: serverTimestamp()
+            });
+            successCount++;
+          } catch (error) {
+            console.error('Error importing resource:', error);
+          }
+        })
+      );
+
+      toast.success(`Successfully imported ${successCount} resources!`);
+    } catch (error) {
+      console.error('Import error:', error);
+      toast.error('Failed to import file. Please check the format.');
+    }
+  };
+
   // SORTING LOGIC
   const sortResources = (resources: Resource[]): Resource[] => {
     const sorted = [...resources];
@@ -340,17 +409,62 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
             <h1 className="text-4xl font-bold text-white mb-2">404Dashboard</h1>
             <p className="text-gray-300">Welcome back, {user.email}</p>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            Logout
-          </button>
+          <div className="flex gap-2">
+            {/* Export Dropdown */}
+            <div className="relative group">
+              <button
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+                Export
+              </button>
+              <div className="hidden group-hover:block absolute right-0 mt-1 w-40 bg-slate-800 rounded-lg shadow-xl border border-white/20 overflow-hidden z-10">
+                <button
+                  onClick={() => handleExport('json')}
+                  className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors"
+                >
+                  Export as JSON
+                </button>
+                <button
+                  onClick={() => handleExport('csv')}
+                  className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors"
+                >
+                  Export as CSV
+                </button>
+              </div>
+            </div>
+
+            {/* Import Button */}
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              Import
+            </button>
+
+            {/* Hidden file input */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleImport}
+              className="hidden"
+            />
+
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              Logout
+            </button>
+          </div>
         </div>
 
         {/* Search Bar with Sorting */}
         <SearchBar
+          ref={searchInputRef}
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           selectedCategory={selectedCategory}
