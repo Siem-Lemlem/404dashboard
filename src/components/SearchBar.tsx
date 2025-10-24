@@ -1,3 +1,4 @@
+import { forwardRef } from 'react';
 import { Search, Plus } from 'lucide-react';
 import { Category } from '../types';
 
@@ -21,7 +22,7 @@ const sortOptions = [
   { value: 'category', label: 'Category' }
 ];
 
-export default function SearchBar({
+const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(({
   searchTerm,
   onSearchChange,
   selectedCategory,
@@ -29,15 +30,16 @@ export default function SearchBar({
   sortBy,
   onSortChange,
   onAddClick
-}: SearchBarProps) {
+}, ref) => {
   return (
     <div className="bg-white/10 backdrop-blur-lg rounded-lg p-4 mb-6 shadow-xl">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <input
+            ref={ref}
             type="text"
-            placeholder="Search resources..."
+            placeholder="Search resources... (Ctrl/⌘ + K)"
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className="w-full pl-10 pr-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
@@ -67,6 +69,7 @@ export default function SearchBar({
           <button
             onClick={onAddClick}
             className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2 transition-colors whitespace-nowrap"
+            title="Add Resource (Ctrl/⌘ + N)"
           >
             <Plus className="w-5 h-5" />
             Add Resource
@@ -75,4 +78,8 @@ export default function SearchBar({
       </div>
     </div>
   );
-}
+});
+
+SearchBar.displayName = 'SearchBar';
+
+export default SearchBar;

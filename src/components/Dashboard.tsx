@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { LogOut } from 'lucide-react';
 import toast from 'react-hot-toast';
 import {
@@ -13,6 +13,7 @@ import {
 import { signOut } from 'firebase/auth';
 import { db, auth } from '../firebase';
 import { User, Resource, ResourceFormData, SampleResource } from '../types';
+import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import WelcomeModal from './WelcomeModal';
 import SearchBar from './SearchBar';
 import ResourceCard from './ResourceCard';
@@ -99,6 +100,39 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
     category: 'Documentation',
     tags: ''
   });
+
+  // Ref for search input to focus it
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // KEYBOARD SHORTCUTS
+  useKeyboardShortcuts([
+    {
+      key: 'k',
+      ctrlKey: true,
+      callback: () => {
+        searchInputRef.current?.focus();
+        toast.success('Search focused, start typing...', { duration: 1500 });
+      }
+    },
+    {
+      key: 'n',
+      ctrlKey: true,
+      callback: () => {
+        if (!showAddModal) {
+          setShowAddModal(true);
+          toast.success('New resource', { duration: 1500 });
+        }
+      }
+    },
+    {
+      key: 'Escape',
+      callback: () => {
+        if (showAddModal) {
+          handleCloseModal();
+        }
+      }
+    }
+  ]);
 
   // FIRESTORE REALTIME LISTENER
   useEffect(() => {
