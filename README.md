@@ -41,16 +41,26 @@ As developers, we constantly discover useful tools, documentation sites, APIs, a
 
 ---
 
+## Development Timeline
+
+**October 2025
+
+- Project kickoff (Day 1)
+- TypeScript migration and component refactoring (Day 2-3)
+- Sorting, toast notifications, keyboard shortcuts (Days 4)
+- Export/Import functionality (Day 5)
+- Phase 1 Nearing completion (5/6 features done)
+
 ## Roadmap
 
 ### Phase 1: Core Polish *(In Progress)*
 
-- [ ] Onboarding flow with sample data  
-- [ ] Toast notifications  
-- [ ] Better error handling  
-- [ ] Sorting (by name, date, category)  
-- [ ] Keyboard shortcuts (Cmd/Ctrl + K)  
-- [ ] Export/Import (JSON, CSV)  
+- [x] Onboarding flow with sample data  
+- [x] Toast notifications  
+- [x] Better error handling  
+- [x] Sorting (by name, date, category)  
+- [x] Keyboard shortcuts (Cmd/Ctrl + K)  
+- [x] Export/Import (JSON, CSV)  
 - [ ] Usage statistics dashboard  
 
 ### Phase 2: Power User Features
