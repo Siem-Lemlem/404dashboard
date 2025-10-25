@@ -20,6 +20,7 @@ import SearchBar from './SearchBar';
 import ResourceCard from './ResourceCard';
 import ResourceModal from './ResourceModal';
 import EmptyState from './EmptyState';
+import StatsWidget from './StatsWidget';
 
 interface DashboardProps {
   user: User;
@@ -198,7 +199,7 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
       });
 
       setShowWelcome(false);
-      toast.success('Welcome to 404Dashboard!');
+      toast.success('Welcome to 404Dashboard! 👋');
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Failed to update profile. Please try again.');
@@ -461,6 +462,9 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
             </button>
           </div>
         </div>
+
+        {/* Stats Widget */}
+        <StatsWidget resources={resources} />
 
         {/* Search Bar with Sorting */}
         <SearchBar
