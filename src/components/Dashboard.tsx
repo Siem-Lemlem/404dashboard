@@ -92,6 +92,7 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState('dateDesc');
   const [loading, setLoading] = useState(true);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
@@ -183,7 +184,7 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
       });
 
       setShowWelcome(false);
-      toast.success('Welcome! 8 sample resources added to get you started');
+      toast.success('Welcome! 8 sample resources added to get you started 🎉');
     } catch (error) {
       console.error('Error adding sample resources:', error);
       toast.error('Failed to add sample resources. Please try again.');
@@ -239,7 +240,7 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
           tags: processedTags,
           updatedAt: serverTimestamp()
         });
-        toast.success('Resource updated successfully!');
+        toast.success('Resource updated successfully! ✨');
       } else {
         const resourcesRef = collection(db, 'users', user.uid, 'resources');
         await addDoc(resourcesRef, {
@@ -250,7 +251,7 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
           tags: processedTags,
           createdAt: serverTimestamp()
         });
-        toast.success('Resource added successfully!');
+        toast.success('Resource added successfully! 🎉');
       }
 
       setFormData({ name: '', url: '', description: '', category: 'Documentation', tags: '' });
@@ -348,7 +349,7 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
         })
       );
 
-      toast.success(`Successfully imported ${successCount} resources!`);
+      toast.success(`Successfully imported ${successCount} resources! 🎉`);
     } catch (error) {
       console.error('Import error:', error);
       toast.error('Failed to import file. Please check the format.');
@@ -386,49 +387,68 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
       resource.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       resource.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = selectedCategory === 'All' || resource.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesTags = selectedTags.length === 0 || selectedTags.some(tag => resource.tags.includes(tag));
+    return matchesSearch && matchesCategory && matchesTags;
   });
 
   // APPLY SORTING TO FILTERED RESOURCES
   const sortedAndFilteredResources = sortResources(filteredResources);
 
+  // GET ALL UNIQUE TAGS
+  const allTags = Array.from(new Set(resources.flatMap(r => r.tags))).sort();
+
   // LOADING STATE
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
         <div className="text-white text-xl">Loading your resources...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-zinc-900">
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
         <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-4xl font-bold text-white mb-2">404Dashboard</h1>
-            <p className="text-gray-300">Welcome back, {user.email}</p>
+          <div className="flex items-center gap-4">
+            {/* Avatar Circle */}
+            <div className="w-12 h-12 rounded-full bg-purple-500/20 border-2 border-purple-500/40 flex items-center justify-center">
+              <span className="text-xl font-bold text-purple-300">
+                {user.email?.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            
+            {/* Welcome Text */}
+            <div>
+              <h1 className="text-2xl font-bold text-white">
+                Welcome back, {user.email?.split('@')[0].charAt(0).toUpperCase() + user.email?.split('@')[0].slice(1)}!
+              </h1>
+              <p className="text-sm text-gray-400">{user.email}</p>
+            </div>
           </div>
+          
           <div className="flex gap-2">
             {/* Export Dropdown */}
             <div className="relative group">
               <button
-                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-zinc-800/40 backdrop-blur-sm hover:bg-zinc-800/60 text-white rounded-lg border border-purple-500/20 hover:border-purple-500/40 transition-all"
               >
                 <Download className="w-4 h-4" />
                 Export
               </button>
-              <div className="hidden group-hover:block absolute right-0 mt-1 w-40 bg-slate-800 rounded-lg shadow-xl border border-white/20 overflow-hidden z-10">
+              {/* Bridge the gap - invisible div */}
+              <div className="hidden group-hover:block absolute right-0 top-full h-2 w-40" />
+              <div className="hidden group-hover:block absolute right-0 top-full mt-2 w-40 bg-zinc-800/90 backdrop-blur-xl rounded-lg shadow-xl border border-purple-500/20 overflow-hidden z-10">
                 <button
                   onClick={() => handleExport('json')}
-                  className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors"
+                  className="w-full px-4 py-2 text-left text-white hover:bg-purple-500/10 transition-colors"
                 >
                   Export as JSON
                 </button>
                 <button
                   onClick={() => handleExport('csv')}
-                  className="w-full px-4 py-2 text-left text-white hover:bg-white/10 transition-colors"
+                  className="w-full px-4 py-2 text-left text-white hover:bg-purple-500/10 transition-colors"
                 >
                   Export as CSV
                 </button>
@@ -438,7 +458,7 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
             {/* Import Button */}
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-zinc-800/40 backdrop-blur-sm hover:bg-zinc-800/60 text-white rounded-lg border border-purple-500/20 hover:border-purple-500/40 transition-all"
             >
               <Upload className="w-4 h-4" />
               Import
@@ -455,7 +475,7 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
 
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg border border-white/20 transition-colors"
+              className="flex items-center gap-2 px-4 py-2 bg-zinc-800/40 backdrop-blur-sm hover:bg-zinc-800/60 text-white rounded-lg border border-purple-500/20 hover:border-purple-500/40 transition-all"
             >
               <LogOut className="w-4 h-4" />
               Logout
@@ -475,6 +495,9 @@ export default function Dashboard({ user, showWelcome, setShowWelcome }: Dashboa
           onCategoryChange={setSelectedCategory}
           sortBy={sortBy}
           onSortChange={setSortBy}
+          selectedTags={selectedTags}
+          onTagsChange={setSelectedTags}
+          allTags={allTags}
           onAddClick={() => setShowAddModal(true)}
         />
 

@@ -9,6 +9,9 @@ interface SearchBarProps {
   onCategoryChange: (category: string) => void;
   sortBy: string;
   onSortChange: (sort: string) => void;
+  selectedTags: string[];
+  onTagsChange: (tags: string[]) => void;
+  allTags: string[];
   onAddClick: () => void;
 }
 

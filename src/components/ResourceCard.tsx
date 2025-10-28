@@ -1,5 +1,6 @@
 import { ExternalLink, Trash2, Edit } from "lucide-react";
 import { Resource, Category } from '../types';
+import GlareHover from "../hooks/GlareHover";
 
 interface ResourceCardProps {
   resource: Resource;
@@ -23,14 +24,32 @@ const getCategoryColor = (category: Category): string => {
 
 export default function ResourceCard({ resource, onEdit, onDelete }: ResourceCardProps) {
   return (
-    <div className="bg-white/10 backdrop-blur-lg rounded-lg p-5 shadow-xl border border-white/20 hover:border-purple-500 transition-all hover:transform hover:scale-105">
+  <GlareHover
+    width="100%"
+    height="100%"
+    background="transparent"
+    borderRadius="0.5rem"
+    borderColor="transparent"
+    glareColor="#a855f7"
+    glareOpacity={0.2}
+    glareAngle={-30}
+    glareSize={300}
+    transitionDuration={800}
+    playOnce={false}
+    className="w-full hover:scale-105"
+    style={{ border: 'none' }}
+  >
+    <div className="bg-white/10 backdrop-blur-lg rounded-lg p-5 shadow-xl border border-white/20 hover:border-purple-500 transition-all hover:transform ">
       <div className="flex justify-between items-start mb-3">
         <div className="flex-1">
           <h3 className="text-xl font-semibold text-white mb-1">{resource.name}</h3>
-          <span className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(resource.category)}`}>
+          <span
+            className={`text-xs px-2 py-1 rounded-full ${getCategoryColor(resource.category)}`}
+          >
             {resource.category}
           </span>
         </div>
+
         <div className="flex gap-2">
           <button
             onClick={() => onEdit(resource)}
@@ -48,9 +67,9 @@ export default function ResourceCard({ resource, onEdit, onDelete }: ResourceCar
           </button>
         </div>
       </div>
-      
+
       <p className="text-gray-300 text-sm mb-3">{resource.description}</p>
-      
+
       <div className="flex flex-wrap gap-1 mb-3">
         {resource.tags.map((tag, idx) => (
           <span key={idx} className="text-xs px-2 py-1 bg-white/10 text-gray-300 rounded">
@@ -58,7 +77,7 @@ export default function ResourceCard({ resource, onEdit, onDelete }: ResourceCar
           </span>
         ))}
       </div>
-      
+
       <a
         href={resource.url}
         target="_blank"
@@ -69,5 +88,6 @@ export default function ResourceCard({ resource, onEdit, onDelete }: ResourceCar
         <span className="text-sm truncate">{resource.url}</span>
       </a>
     </div>
+  </GlareHover>
   );
 }
