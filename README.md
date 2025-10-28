@@ -61,7 +61,7 @@ As developers, we constantly discover useful tools, documentation sites, APIs, a
 - [x] Sorting (by name, date, category)  
 - [x] Keyboard shortcuts (Cmd/Ctrl + K)  
 - [x] Export/Import (JSON, CSV)  
-- [ ] Usage statistics dashboard  
+- [x] Usage statistics dashboard  
 
 ### Phase 2: Power User Features
 
