@@ -41,63 +41,6 @@ As developers, we constantly discover useful tools, documentation sites, APIs, a
 
 ---
 
-## Development Timeline
-
-**October 2025
-
-- Project kickoff (Day 1)
-- TypeScript migration and component refactoring (Day 2-3)
-- Sorting, toast notifications, keyboard shortcuts (Days 4)
-- Export/Import functionality (Day 5)
-- Phase 1 Nearing completion (5/6 features done)
-
-## Roadmap
-
-### Phase 1: Core Polish *(In Progress)*
-
-- [x] Onboarding flow with sample data  
-- [x] Toast notifications  
-- [x] Better error handling  
-- [x] Sorting (by name, date, category)  
-- [x] Keyboard shortcuts (Cmd/Ctrl + K)  
-- [x] Export/Import (JSON, CSV)  
-- [x] Usage statistics dashboard  
-
-### Phase 2: Power User Features
-
-- [ ] Bulk operations  
-- [ ] Advanced filters  
-- [ ] Auto-fetch metadata (page titles, descriptions)  
-- [ ] Folders/collections  
-- [ ] Favorites and pinning  
-- [ ] Recently accessed tracking  
-
-### Phase 3: Chrome Extension
-
-- [ ] Right-click context menu "Save to 404Dashboard"  
-- [ ] Quick access popup  
-- [ ] Omnibox search integration  
-- [ ] Auto-categorization  
-- [ ] Full sync with web app  
-
-### Phase 4: Community Features
-
-- [ ] Community resource hub  
-- [ ] Resource submission system  
-- [ ] VirusTotal API integration  
-- [ ] Public sharing profiles  
-- [ ] Upvoting system  
-
-### Phase 5: Launch
-
-- [ ] Landing page  
-- [ ] Documentation site  
-- [ ] Performance optimization  
-- [ ] Chrome Web Store submission  
-- [ ] Public beta  
-
----
-
 ## Getting Started
 
 ### Prerequisites
@@ -168,22 +111,71 @@ npm run dev
 
 ## Project Structure
 
-```bash
-404dashboard/
-├── src/
-│   ├── components/
-│   │   └── Dashboard.jsx       # Main dashboard component
-│   ├── pages/
-│   │   └── AuthPage.jsx        # Authentication page
-│   ├── firebase.js             # Firebase configuration
-│   ├── App.jsx                 # Root component with auth state
-│   └── main.jsx                # Entry point
-├── public/
-├── .env.local                  # Environment variables (not tracked)
-├── .gitignore
+<!-- WRLDTREE START -->
+```text
+. (root/)
+├── LICENSE
+├── README.md
+├── eslint.config.ts
+├── index.html
+├── package-lock.json
 ├── package.json
-└── README.md
+├── postcss.config.js
+├── public/
+│   ├── Screenshot_1.png
+│   ├── Screenshot_2.png
+│   ├── Screenshot_3.png
+│   └── Screenshot_4.png
+├── src/
+│   ├── App.css
+│   ├── App.tsx
+│   ├── assets/
+│   ├── components/
+│   │   ├── AddToCollectionModal.tsx
+│   │   ├── BulkActionBar.tsx
+│   │   ├── CollectionModal.tsx
+│   │   ├── CollectionsPanel.tsx
+│   │   ├── Dashboard.tsx
+│   │   ├── EmptyState.tsx
+│   │   ├── ResourceCard.tsx
+│   │   ├── ResourceModal.tsx
+│   │   ├── SearchBar.tsx
+│   │   ├── StatsWidget.tsx
+│   │   └── WelcomeModal.tsx
+│   ├── firebase.ts
+│   ├── firebaseConfig.ts
+│   ├── hooks/
+│   │   ├── ColorBends.tsx
+│   │   ├── FadeContent.tsx
+│   │   ├── GradientText.tsx
+│   │   ├── LightRays.tsx
+│   │   ├── Logo.tsx
+│   │   ├── ShinyText.tsx
+│   │   ├── UseInView.ts
+│   │   └── useKeyboardShortcuts.ts
+│   ├── index.css
+│   ├── main.tsx
+│   ├── pages/
+│   │   ├── AuthPage.tsx
+│   │   ├── LandingPage.tsx
+│   │   └── landing/
+│   │       ├── CTA.tsx
+│   │       ├── Features.tsx
+│   │       ├── Footer.tsx
+│   │       ├── Hero.tsx
+│   │       ├── NavBar.tsx
+│   │       └── Why.tsx
+│   ├── types/
+│   │   └── index.ts
+│   └── utils/
+│       ├── exportImport.ts
+│       └── fetchMetadata.ts
+├── tailwind.config.js
+├── tsconfig.json
+├── tsconfig.node.json
+└── vite.config.js
 ```
+<!-- WRLDTREE END -->
 
 ## Contributing
 
@@ -191,14 +183,17 @@ This is currently a personal project, but contributions are welcome once we reac
 
 ## Future Vision
 
-The goal is to make 404Dashboard the default way developers manage their toolkit - think of it as "bookmarks designed by developers, for developers." With the Chrome extension, it becomes a seamless part of your browsing workflow, and with community features, we can all benefit from each other's curated collections.
-
-## License
-
-MIT(to be added)
+The goal is to make 404Dashboard the default way developers manage their toolkit - think of it as "bookmarks designed by developers, for developers."
 
 ## Contact
 
 Built by Siem Lemlem - siemlemlem50@gmail.com
 
 ## Status: Active Development|Version:0.1.0(MVP)
+
+## License
+
+404Dashboard is open-source software licensed under the  
+**GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+See the [LICENSE](./LICENSE) file for details.

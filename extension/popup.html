@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      width: 380px;
+      min-height: 200px;
+      background: #0f0f0f;
+      color: #f0f0f0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid #1f1f1f;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .logo-icon {
+      width: 20px;
+      height: 20px;
+      background: linear-gradient(135deg, #7c3aed, #db2777);
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    .user-badge {
+      font-size: 11px;
+      color: #666;
+    }
+
+    /* ── States ── */
+    .state {
+      display: none;
+      padding: 20px 16px;
+    }
+    .state.active { display: block; }
+
+    /* ── Auth state ── */
+    .auth-message {
+      text-align: center;
+      padding: 24px 16px;
+    }
+    .auth-message p {
+      color: #666;
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #7c3aed, #db2777);
+      color: #fff;
+      border: none;
+      padding: 9px 20px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      width: 100%;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      background: transparent;
+      color: #999;
+      border: 1px solid #2a2a2a;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 12px;
+      cursor: pointer;
+      width: 100%;
+      transition: all 0.15s;
+      margin-top: 8px;
+    }
+    .btn-secondary:hover { border-color: #555; color: #ddd; }
+
+    /* ── Loading state ── */
+    .loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      padding: 32px 16px;
+      text-align: center;
+      color: #555;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #2a2a2a;
+      border-top-color: #7c3aed;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Form ── */
+    .field {
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 500;
+      color: #666;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 5px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 7px;
+      color: #f0f0f0;
+      font-size: 13px;
+      padding: 8px 10px;
+      outline: none;
+      transition: border-color 0.15s;
+      font-family: inherit;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      border-color: #7c3aed;
+    }
+
+    textarea {
+      resize: none;
+      height: 64px;
+      line-height: 1.5;
+    }
+
+    select option {
+      background: #1a1a1a;
+    }
+
+    /* Tags input */
+    .tags-input {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 7px;
+      padding: 6px 8px;
+      min-height: 36px;
+      cursor: text;
+      transition: border-color 0.15s;
+    }
+    .tags-input:focus-within { border-color: #7c3aed; }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #2a1a3a;
+      color: #a78bfa;
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-size: 11px;
+    }
+
+    .tag-remove {
+      cursor: pointer;
+      color: #7c3aed;
+      font-size: 14px;
+      line-height: 1;
+      opacity: 0.7;
+    }
+    .tag-remove:hover { opacity: 1; }
+
+    .tags-input input {
+      background: transparent;
+      border: none;
+      padding: 0;
+      font-size: 12px;
+      outline: none;
+      flex: 1;
+      min-width: 80px;
+      color: #f0f0f0;
+    }
+
+    /* Auto-categorized badge */
+    .auto-badge {
+      display: inline-block;
+      font-size: 10px;
+      color: #7c3aed;
+      background: #2a1a3a;
+      border-radius: 4px;
+      padding: 1px 6px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+
+    /* ── Success state ── */
+    .success {
+      text-align: center;
+      padding: 28px 16px;
+    }
+    .success-icon {
+      font-size: 32px;
+      margin-bottom: 12px;
+    }
+    .success h3 {
+      font-size: 15px;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .success p {
+      color: #555;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    /* ── Error ── */
+    .error-msg {
+      background: #2a1010;
+      border: 1px solid #5a1010;
+      color: #f87171;
+      border-radius: 7px;
+      padding: 8px 10px;
+      font-size: 12px;
+      margin-bottom: 12px;
+      display: none;
+    }
+    .error-msg.visible { display: block; }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 10px 16px;
+      border-top: 1px solid #1a1a1a;
+      display: flex;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">
+      <div class="logo-icon">🔖</div>
+      404Dashboard
+    </div>
+    <span class="user-badge" id="user-badge"></span>
+  </div>
+
+  <!-- State: Loading -->
+  <div class="state active" id="state-loading">
+    <div class="loading">
+      <div class="spinner"></div>
+      <span>Loading...</span>
+    </div>
+  </div>
+
+  <!-- State: Not authenticated -->
+  <div class="state" id="state-auth">
+    <div class="auth-message">
+      <p>Sign in to 404Dashboard to start saving resources from anywhere.</p>
+      <button class="btn-primary" id="btn-open-app">
+        Open 404Dashboard to sign in
+      </button>
+    </div>
+  </div>
+
+  <!-- State: Save form -->
+  <div class="state" id="state-form">
+    <div class="error-msg" id="error-msg"></div>
+
+    <div class="field">
+      <label>Name</label>
+      <input type="text" id="input-name" placeholder="Resource name" />
+    </div>
+
+    <div class="field">
+      <label>URL</label>
+      <input type="text" id="input-url" placeholder="https://" />
+    </div>
+
+    <div class="field">
+      <label>Description</label>
+      <textarea id="input-description" placeholder="What is this resource?"></textarea>
+    </div>
+
+    <div class="field">
+      <label>
+        Category
+        <span class="auto-badge" id="auto-badge" style="display:none">auto</span>
+      </label>
+      <select id="input-category">
+        <option value="Documentation">Documentation</option>
+        <option value="Tools">Tools</option>
+        <option value="UI/UX">UI/UX</option>
+        <option value="Backend">Backend</option>
+        <option value="Frontend">Frontend</option>
+        <option value="Community">Community</option>
+        <option value="Learning">Learning</option>
+        <option value="APIs">APIs</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Tags</label>
+      <div class="tags-input" id="tags-container">
+        <input type="text" id="tags-input" placeholder="Add tag, press Enter" />
+      </div>
+    </div>
+
+    <div class="footer">
+      <button class="btn-primary" id="btn-save">Save resource</button>
+    </div>
+  </div>
+
+  <!-- State: Success -->
+  <div class="state" id="state-success">
+    <div class="success">
+      <div class="success-icon">✅</div>
+      <h3>Saved!</h3>
+      <p id="success-msg">Resource added to your 404Dashboard.</p>
+      <button class="btn-secondary" id="btn-save-another" style="margin-top:16px;">
+        Save another
+      </button>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

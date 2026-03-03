@@ -3,6 +3,7 @@ import { Timestamp } from 'firebase/firestore';
 
 export type User = FirebaseUser;
 
+
 // Resource type
 export interface Resource {
   id: string;
@@ -13,6 +14,9 @@ export interface Resource {
   tags: string[];
   createdAt: Timestamp;
   updateAt?: Timestamp;
+  pinned?: boolean;
+  collectionIds?: string[];
+  lastAccessedAt?: Timestamp;
 }
 
 // Categories
@@ -52,3 +56,25 @@ export interface SampleResource {
   category: Category;
   tags: string[];
 }
+
+export interface Collection {
+  id: string;
+  name: string;
+  description?: string;
+  color?: string;
+  icon?: string;
+  resourceIds: string[];
+  createAt: Timestamp;
+  updatedAt?: Timestamp;
+}
+
+export const COLLECTION_COLORS = [
+  { name: 'Purple', value: 'purple', class: 'bg-purple-500' },
+  { name: 'Blue', value: 'blue', class: 'bg-blue-500' },
+  { name: 'Green', value: 'green', class: 'bg-green-500' },
+  { name: 'Orange', value: 'orange', class: 'bg-orange-500' },
+  { name: 'Pink', value: 'pink', class: 'bg-pink-500' },
+  { name: 'Teal', value: 'teal', class: 'bg-teal-500' },
+  { name: 'Red', value: 'red', class: 'bg-red-500' },
+  { name: 'Yellow', value: 'yellow', class: 'bg-yellow-500' },
+];

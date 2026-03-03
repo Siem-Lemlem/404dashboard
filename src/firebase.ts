@@ -1,3 +1,13 @@
+// src/firebase.ts
+
+/*
+ * Copyright (c) 2025 Siem Lemlem
+ * This file is part of 404Dashboard.
+ * Licensed under the GNU Affero General Public License v3.0 or later.
+ * See the LICENSE file for more details.
+ */
+
+
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";

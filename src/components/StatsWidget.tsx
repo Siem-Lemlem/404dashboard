@@ -108,7 +108,7 @@ export default function StatsWidget({ resources }: StatsWidgetProps) {
           <div className="flex flex-col">
             <h3 className="text-white font-semibold mb-3">Category Distribution</h3>
             <div className="w-full h-64 md:h-72">
-              <ResponsiveContainer width="100%" height="100%">
+              <ResponsiveContainer width="100%" aspect={2}>
                 <PieChart>
                   <Pie
                     data={pieData}
@@ -138,7 +138,7 @@ export default function StatsWidget({ resources }: StatsWidgetProps) {
 
           {/* Top Categories List */}
           <div className="flex flex-col">
-            <h3 className="text-white font-semibold mb-3">Top Categories</h3>
+            <h3 className="text-white font-semibold mb-3 py-5">Top Categories</h3>
             <div className="space-y-3">
               {topCategories.map(([category, count]) => {
                 const percentage = (count / maxCount) * 100;

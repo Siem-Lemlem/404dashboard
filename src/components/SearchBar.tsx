@@ -22,7 +22,8 @@ const sortOptions = [
   { value: 'dateAsc', label: 'Oldest First' },
   { value: 'nameAsc', label: 'Name (A-Z)' },
   { value: 'nameDesc', label: 'Name (Z-A)' },
-  { value: 'category', label: 'Category' }
+  { value: 'category', label: 'Category' },
+  { value: 'recentlyAccessed', label: 'Recently Accessed'}
 ];
 
 const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(({
@@ -32,7 +33,6 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(({
   onCategoryChange,
   sortBy,
   onSortChange,
-  onAddClick
 }, ref) => {
   return (
     <div className="bg-white/10 backdrop-blur-lg rounded-lg p-4 mb-6 shadow-xl">
@@ -69,14 +69,6 @@ const SearchBar = forwardRef<HTMLInputElement, SearchBarProps>(({
               </option>
             ))}
           </select>
-          <button
-            onClick={onAddClick}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg flex items-center gap-2 transition-colors whitespace-nowrap"
-            title="Add Resource (Ctrl/⌘ + N)"
-          >
-            <Plus className="w-5 h-5" />
-            Add Resource
-          </button>
         </div>
       </div>
     </div>

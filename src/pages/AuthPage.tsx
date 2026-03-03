@@ -9,6 +9,9 @@ import {
 } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
 import { auth } from "../firebase";
+import FadeContent from "../hooks/FadeContent";
+import LightRays from "../hooks/LightRays";
+import ShinyText from "../hooks/ShinyText";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -77,10 +80,41 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
-      <div className="bg-zinc-900/10 backdrop-blur-sm rounded-2xl p-8 w-full max-w-md border border-zinc-800 shadow-2xl">
+    <div
+      style={{ width: '100%', height: '600px', position: 'relative' }}
+      className="min-h-screen bg-zinc-900 flex items-center justify-center p-4 overflow-hidden"
+    >
+      {/* Background Layer */}
+      <div className="absolute inset-0 z-0">
+        <LightRays
+          raysOrigin="top-center"
+          raysColor="rgba(255, 255, 255, 0.8)"
+          raysSpeed={1.5}
+          lightSpread={0.8}
+          rayLength={1.2}
+          followMouse={true}
+          mouseInfluence={0.1}
+          noiseAmount={0.1}
+          distortion={0.05}
+          className="w-full h-full mix-blend-screen opacity-80"
+        />
+      </div>
+
+      {/* Foreground Content */}
+      <FadeContent
+        blur={true}
+        duration={1000}
+        easing="ease-out"
+        initialOpacity={0}
+        className="relative z-10 bg-zinc-900/10 backdrop-blur-sm rounded-2xl p-8 w-full max-w-md border border-zinc-800 shadow-2xl"
+      >
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">404Dashboard</h1>
+          <ShinyText
+            text="404Dashboard"
+            disabled={false}
+            speed={4}
+            className="text-5xl"
+          />
           <p className="text-gray-300">
             {isLogin ? "Welcome back!" : "Create your account"}
           </p>
@@ -155,7 +189,7 @@ export default function AuthPage() {
             </button>
           </p>
         </div>
-      </div>
+      </FadeContent>
     </div>
   );
 }

@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "404Dashboard",
+  "version": "1.0.0",
+  "description": "Save any webpage to your 404Dashboard resource library instantly.",
+
+  "permissions": [
+    "activeTab",
+    "storage",
+    "identity",
+    "contextMenus",
+    "scripting"
+  ],
+
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*",
+    "https://api.microlink.io/*",
+    "https://*.firebaseio.com/*",
+    "https://firestore.googleapis.com/*",
+    "https://identitytoolkit.googleapis.com/*",
+    "https://securetoken.googleapis.com/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+
+  "omnibox": {
+    "keyword": "404"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["https://*/*", "http://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
